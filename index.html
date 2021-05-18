@@ -87,7 +87,7 @@
 
         function actionBeforeRender(scene){
             var hitBox = BABYLON.Mesh.CreateBox("hitBox", 2, scene);
-            //box.isVisible = false;
+            hitBox.isVisible = false;
 
             scene.registerBeforeRender(() => {
                 
@@ -118,7 +118,7 @@
                 playSound(0);
                 BABYLON.ParticleHelper.CreateAsync("explosion", scene).then((set) => {
                 console.log(set);
-                set.emitterNode = new BABYLON.Vector3(18,1,18);
+                set.emitterNode = new BABYLON.Vector3(18, 0, 18);
                 set.systems.forEach(s => {
                     s.disposeOnStop = true;
                 });
@@ -132,8 +132,22 @@
         function collectBox(boxName){
             console.log("coletou caixa " + boxName);
             playSound(1);
-            particles(cont);
+            //particles(cont);
             cont++;           
+            
+            // animação de coletar a caixa
+            BABYLON.ParticleHelper.CreateAsync("fire", scene).then((set) => {
+                console.log(set);
+                set.emitterNode = new BABYLON.Vector3(boxes[boxName].position.x, 3 ,boxes[boxName].position.z);
+                set.systems.forEach(s => {
+                    s.disposeOnStop = true;
+                });
+                set.start();
+            });
+
+            // animação de coletar a caixa
+            const sambaAnim = scene.getAnimationGroupByName("Samba");
+            sambaAnim.start(true, 1.0, 0.25, 0.35, true);
 
             // animação de coletar a caixa
 
@@ -152,7 +166,7 @@
             });
         }
         
-        function particles(index)
+        /*function particles(index)
         {
             let particleSystem;
             var aux;
@@ -178,7 +192,7 @@
             particleSystem.targetStopDuration = 0.5;
 
             // particleSystem.disposeOnStop = true;
-        }
+        }*/
 
         function endGame(){
             isGameOver = true;
