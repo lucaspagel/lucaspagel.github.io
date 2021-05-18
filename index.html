@@ -56,6 +56,7 @@
         var hero;
         var cont = 0;
         var isGameOver = false;
+        var flagExploded = false;
 
         var createScene = function () {
             scene = new BABYLON.Scene(engine);
@@ -95,6 +96,7 @@
                 barrels.forEach(barrel => {
                     if (hitBox.intersectsMesh(barrel, false) && !barrel._isDirty) {
                         explodeBarrel();
+                        barrel.dispose();
                     }
                 });
                 }
@@ -111,22 +113,71 @@
         }
 
         function explodeBarrel(){
-            console.log("BOOM");
-
-            // animação de explosão do barril
-            // barulho de explosão do barril
-            // remoção do barril
+            if(!flagExploded){
+                console.log("BOOM");
+                playSound(0);
+                BABYLON.ParticleHelper.CreateAsync("explosion", scene).then((set) => {
+                console.log(set);
+                set.emitterNode = new BABYLON.Vector3(18,1,18);
+                set.systems.forEach(s => {
+                    s.disposeOnStop = true;
+                });
+                set.start();
+            });
+            }
+                
+            flagExploded = true;
         }
 
         function collectBox(boxName){
             console.log("coletou caixa " + boxName);
-            cont++;
+            playSound(1);
+            particles(cont);
+            cont++;           
 
             // animação de coletar a caixa
-            // barulho de coletar a caixa
 
             if(cont == 10)
                 endGame();
+        }
+
+        function playSound(index){
+            var sounds;
+            var music;
+
+            sounds = ["explosion.mp3", "tiro.mp3"]
+
+            music = new BABYLON.Sound("Music",sounds[index], scene, function () {
+                    music.play();
+            });
+        }
+        
+        function particles(index)
+        {
+            let particleSystem;
+            var aux;
+
+            aux = scene.getMeshByName(index);
+
+            console.log(aux);
+
+            // Create a particle system
+            particleSystem = new BABYLON.ParticleSystem("particles", 1000);
+
+
+            //Texture of each particle
+            particleSystem.particleTexture = new BABYLON.Texture("grass-textureCircular.png");
+            particleSystem.emitter = boxes[index];
+
+            particleSystem.minSize = 50;
+            particleSystem.maxSize = 50;
+
+            particleSystem.blendMode = BABYLON.ParticleSystem.BLENDMODE_STANDARD;
+
+            particleSystem.start();
+            particleSystem.targetStopDuration = 0.5;
+
+            // particleSystem.disposeOnStop = true;
         }
 
         function endGame(){
